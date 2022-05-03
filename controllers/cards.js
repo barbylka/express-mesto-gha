@@ -3,6 +3,7 @@ const Card = require('../models/card');
 const DEFAULT_ERROR = 500;
 const NOT_FOUND_ERROR = 404;
 const BAD_REQUEST_ERROR = 400;
+const regex = /^[0-9a-f]{24}$/gm;
 
 const proccessError = (res, ERROR_CODE, message) => {
   res.status(ERROR_CODE).send({
@@ -36,13 +37,17 @@ const postCard = async (req, res) => {
 
 const deleteCard = async (req, res) => {
   try {
-    await Card.findByIdAndRemove(req.params.cardId);
-    res.status(200).send({
-      message: 'Пост удален',
-    });
-  } catch (err) {
-    if (err.kind === 'ObjectId') {
+    const card = await Card.findByIdAndRemove(req.params.cardId);
+    if (card) {
+      res.status(200).send({
+        message: 'Пост удален',
+      });
+    } else {
       proccessError(res, NOT_FOUND_ERROR, 'Карточка не найдена');
+    }
+  } catch (err) {
+    if (!(regex.test(req.params.cardId))) {
+      proccessError(res, BAD_REQUEST_ERROR, 'Переданы некорректные данные');
     } else {
       proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
     }
@@ -58,11 +63,13 @@ const likeCard = async (req, res) => {
         { new: true }
       )
       .populate(['owner', 'likes']);
-    res.status(200).send(card);
-  } catch (err) {
-    if (err.kind === 'ObjectId') {
+    if (card) {
+      res.status(200).send(card);
+    } else {
       proccessError(res, NOT_FOUND_ERROR, 'Карточка не найдена');
-    } else if (err.name === 'ValidationError') {
+    }
+  } catch (err) {
+    if (!(regex.test(req.params.cardId))) {
       proccessError(res, BAD_REQUEST_ERROR, 'Переданы некорректные данные');
     } else {
       proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
@@ -79,11 +86,13 @@ const dislikeCard = async (req, res) => {
         { new: true }
       )
       .populate(['owner', 'likes']);
-    res.status(200).send(card);
-  } catch (err) {
-    if (err.kind === 'ObjectId') {
+    if (card) {
+      res.status(200).send(card);
+    } else {
       proccessError(res, NOT_FOUND_ERROR, 'Карточка не найдена');
-    } else if (err.name === 'ValidationError') {
+    }
+  } catch (err) {
+    if (!(regex.test(req.params.cardId))) {
       proccessError(res, BAD_REQUEST_ERROR, 'Переданы некорректные данные');
     } else {
       proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
