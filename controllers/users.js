@@ -3,7 +3,6 @@ const User = require('../models/user');
 const DEFAULT_ERROR = 500;
 const NOT_FOUND_ERROR = 404;
 const BAD_REQUEST_ERROR = 400;
-const regex = /^[0-9a-f]{24}$/gm;
 
 const proccessError = (res, ERROR_CODE, message) => {
   res.status(ERROR_CODE).send({
@@ -29,7 +28,7 @@ const getUserById = async (req, res) => {
       proccessError(res, NOT_FOUND_ERROR, 'Пользователь не найден');
     }
   } catch (err) {
-    if (!(regex.test(req.params.userId))) {
+    if (err.name === 'CastError') {
       proccessError(res, BAD_REQUEST_ERROR, 'Передан некорректный id');
     } else {
       proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
@@ -62,12 +61,16 @@ const updateUser = async (req, res) => {
         runValidators: true
       }
     );
-    res.status(200).send(user);
-  } catch (err) {
-    if (err.kind === 'ObjectId') {
+    if (user) {
+      res.status(200).send(user);
+    } else {
       proccessError(res, NOT_FOUND_ERROR, 'Пользователь не найден');
-    } else if (err.name === 'ValidationError') {
+    }
+  } catch (err) {
+    if (err.name === 'ValidationError') {
       proccessError(res, BAD_REQUEST_ERROR, 'Переданы некорректные данные');
+    } else if (err.name === 'CastError') {
+      proccessError(res, BAD_REQUEST_ERROR, 'Передан некорректный  id пользователя');
     } else {
       proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
     }
@@ -85,12 +88,16 @@ const updateAvatar = async (req, res) => {
         runValidators: true
       }
     );
-    res.status(200).send(user);
-  } catch (err) {
-    if (err.kind === 'ObjectId') {
+    if (user) {
+      res.status(200).send(user);
+    } else {
       proccessError(res, NOT_FOUND_ERROR, 'Пользователь не найден');
-    } else if (err.name === 'ValidationError') {
+    }
+  } catch (err) {
+    if (err.name === 'ValidationError') {
       proccessError(res, BAD_REQUEST_ERROR, 'Переданы некорректные данные');
+    } else if (err.name === 'CastError') {
+      proccessError(res, BAD_REQUEST_ERROR, 'Передан некорректный  id пользователя');
     } else {
       proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
     }

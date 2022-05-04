@@ -3,7 +3,6 @@ const Card = require('../models/card');
 const DEFAULT_ERROR = 500;
 const NOT_FOUND_ERROR = 404;
 const BAD_REQUEST_ERROR = 400;
-const regex = /^[0-9a-f]{24}$/gm;
 
 const proccessError = (res, ERROR_CODE, message) => {
   res.status(ERROR_CODE).send({
@@ -46,8 +45,8 @@ const deleteCard = async (req, res) => {
       proccessError(res, NOT_FOUND_ERROR, 'Карточка не найдена');
     }
   } catch (err) {
-    if (!(regex.test(req.params.cardId))) {
-      proccessError(res, BAD_REQUEST_ERROR, 'Переданы некорректные данные');
+    if (err.name === 'CastError') {
+      proccessError(res, BAD_REQUEST_ERROR, 'Передан некорректный id поста');
     } else {
       proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
     }
@@ -69,8 +68,8 @@ const likeCard = async (req, res) => {
       proccessError(res, NOT_FOUND_ERROR, 'Карточка не найдена');
     }
   } catch (err) {
-    if (!(regex.test(req.params.cardId))) {
-      proccessError(res, BAD_REQUEST_ERROR, 'Переданы некорректные данные');
+    if (err.name === 'CastError') {
+      proccessError(res, BAD_REQUEST_ERROR, 'Передан некорректный id поста');
     } else {
       proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
     }
@@ -92,8 +91,8 @@ const dislikeCard = async (req, res) => {
       proccessError(res, NOT_FOUND_ERROR, 'Карточка не найдена');
     }
   } catch (err) {
-    if (!(regex.test(req.params.cardId))) {
-      proccessError(res, BAD_REQUEST_ERROR, 'Переданы некорректные данные');
+    if (err.name === 'CastError') {
+      proccessError(res, BAD_REQUEST_ERROR, 'Передан некорректный id поста');
     } else {
       proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
     }
