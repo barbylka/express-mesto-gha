@@ -14,6 +14,12 @@
         "array": true
       }
     ],
+    "no-unused-vars": [
+      "error",
+      {
+        "args": "none"
+      }
+    ],
     "comma-dangle": "off"
   }
 }

@@ -1,25 +1,18 @@
 const Card = require('../models/card');
+const BadRequestError = require('../errors/BadRequestError');
+const ForbiddenError = require('../errors/ForbiddenError');
+const NotFoundError = require('../errors/NotFoundError');
 
-const DEFAULT_ERROR = 500;
-const NOT_FOUND_ERROR = 404;
-const BAD_REQUEST_ERROR = 400;
-
-const proccessError = (res, ERROR_CODE, message) => {
-  res.status(ERROR_CODE).send({
-    message
-  });
-};
-
-const getCards = async (req, res) => {
+const getCards = async (req, res, next) => {
   try {
     const cards = await Card.find({}).populate(['owner', 'likes']);
     res.status(200).send(cards);
   } catch (err) {
-    proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
+    next(err);
   }
 };
 
-const postCard = async (req, res) => {
+const postCard = async (req, res, next) => {
   try {
     const { name, link } = req.body;
     const _id = req.user._id;
@@ -27,33 +20,35 @@ const postCard = async (req, res) => {
     res.status(201).send(newCard);
   } catch (err) {
     if (err.name === 'ValidationError') {
-      proccessError(res, BAD_REQUEST_ERROR, 'Переданы некорректные данные');
+      next(new BadRequestError('Переданы некорректные данные карточки'));
     } else {
-      proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
+      next(err);
     }
   }
 };
 
-const deleteCard = async (req, res) => {
+const deleteCard = async (req, res, next) => {
   try {
-    const card = await Card.findByIdAndRemove(req.params.cardId);
-    if (card) {
+    const card = await Card.findById(req.params.cardId);
+    if (card && card.owner === req.user._id) {
       res.status(200).send({
         message: 'Пост удален',
       });
+    } else if (!card) {
+      throw new NotFoundError('Карточка не найдена');
     } else {
-      proccessError(res, NOT_FOUND_ERROR, 'Карточка не найдена');
+      throw new ForbiddenError('Нельзя удалять чужие посты');
     }
   } catch (err) {
     if (err.name === 'CastError') {
-      proccessError(res, BAD_REQUEST_ERROR, 'Передан некорректный id поста');
+      next(new BadRequestError('Передан некорректный id поста'));
     } else {
-      proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
+      next(err);
     }
   }
 };
 
-const likeCard = async (req, res) => {
+const likeCard = async (req, res, next) => {
   try {
     const card = await Card
       .findByIdAndUpdate(
@@ -65,18 +60,18 @@ const likeCard = async (req, res) => {
     if (card) {
       res.status(200).send(card);
     } else {
-      proccessError(res, NOT_FOUND_ERROR, 'Карточка не найдена');
+      throw new NotFoundError('Карточка не найдена');
     }
   } catch (err) {
     if (err.name === 'CastError') {
-      proccessError(res, BAD_REQUEST_ERROR, 'Передан некорректный id поста');
+      next(new BadRequestError('Передан некорректный id поста'));
     } else {
-      proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
+      next(err);
     }
   }
 };
 
-const dislikeCard = async (req, res) => {
+const dislikeCard = async (req, res, next) => {
   try {
     const card = await Card
       .findByIdAndUpdate(
@@ -88,13 +83,13 @@ const dislikeCard = async (req, res) => {
     if (card) {
       res.status(200).send(card);
     } else {
-      proccessError(res, NOT_FOUND_ERROR, 'Карточка не найдена');
+      throw new NotFoundError('Карточка не найдена');
     }
   } catch (err) {
     if (err.name === 'CastError') {
-      proccessError(res, BAD_REQUEST_ERROR, 'Передан некорректный id поста');
+      next(new BadRequestError('Передан некорректный id поста'));
     } else {
-      proccessError(res, DEFAULT_ERROR, 'Ошибка в работе сервера');
+      next(err);
     }
   }
 };
