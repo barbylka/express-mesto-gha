@@ -12,7 +12,7 @@ const { DUPLICATE_MONGOOSE_ERROR, SALT_ROUNDS } = require('../utils/constants');
 const checkInputs = (req, res, next) => {
   const value = !req.body.email || !req.body.password;
   if (value) {
-    next(new BadRequestError('Переданы некорректные данные'));
+    next(new BadRequestError('Не переданы данные'));
   }
   return (value);
 };
@@ -129,7 +129,9 @@ const login = async (req, res, next) => {
     try {
       const { email, password } = req.body;
       const user = await User.findUserByCredentials(email, password);
-      if (user) {
+      if (!user) {
+        throw new UnauthorizedError('Неправильные почта или пароль');
+      } else {
         const token = await jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
         res
           .cookie('jwt', token, {
@@ -138,8 +140,6 @@ const login = async (req, res, next) => {
             sameSite: true
           })
           .status(200).send({ token });
-      } else {
-        throw new UnauthorizedError('Неправильные почта или пароль');
       }
     } catch (err) {
       next(err);
