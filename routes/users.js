@@ -8,16 +8,15 @@ const {
   updateAvatar,
   getCurrentUser
 } = require('../controllers/users');
+const { urlRegEx } = require('../utils/constants');
 
 const userRouter = express.Router();
-
-const urlRegEx = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
 
 userRouter.get('/', getUsers);
 userRouter.get('/me', getCurrentUser);
 userRouter.get('/:userId', celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().alphanum().length(24)
+    userId: Joi.string().length(24).hex().required()
   })
 }), getUserById);
 userRouter.patch('/me', express.json(), celebrate({
@@ -33,5 +32,5 @@ userRouter.patch('/me/avatar', express.json(), celebrate({
 }), updateAvatar);
 
 module.exports = {
-  userRouter,
+  userRouter
 };

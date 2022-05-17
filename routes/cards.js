@@ -7,10 +7,9 @@ const {
   likeCard,
   dislikeCard
 } = require('../controllers/cards');
+const { urlRegEx } = require('../utils/constants');
 
 const cardRouter = express.Router();
-
-const urlRegEx = /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)/;
 
 cardRouter.get('/', getCards);
 cardRouter.post('/', express.json(), celebrate({
@@ -21,17 +20,17 @@ cardRouter.post('/', express.json(), celebrate({
 }), postCard);
 cardRouter.delete('/:cardId', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24)
+    cardId: Joi.string().length(24).hex().required()
   })
 }), deleteCard);
 cardRouter.put('/:cardId/likes', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24)
+    cardId: Joi.string().length(24).hex().required()
   })
 }), likeCard);
 cardRouter.delete('/:cardId/likes', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24)
+    cardId: Joi.string().length(24).hex().required()
   })
 }), dislikeCard);
 

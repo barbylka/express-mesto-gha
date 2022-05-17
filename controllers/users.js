@@ -7,9 +7,7 @@ const BadRequestError = require('../errors/BadRequestError');
 const NotFoundError = require('../errors/NotFoundError');
 const ConflictError = require('../errors/ConflictError');
 const UnauthorizedError = require('../errors/UnauthorizedError');
-
-const DUPLICATE_MONGOOSE_ERROR = 11000;
-const SALT_ROUNDS = 10;
+const { DUPLICATE_MONGOOSE_ERROR, SALT_ROUNDS } = require('../utils/constants');
 
 const checkInputs = (req, res, next) => {
   const value = !req.body.email || !req.body.password;
@@ -144,11 +142,7 @@ const login = async (req, res, next) => {
         throw new UnauthorizedError('Неправильные почта или пароль');
       }
     } catch (err) {
-      if (err.message === 'Unauthorized error') {
-        next(new UnauthorizedError('Неправильные почта или пароль'));
-      } else {
-        next(err);
-      }
+      next(err);
     }
   }
 };
@@ -162,11 +156,7 @@ const getCurrentUser = async (req, res, next) => {
       throw new NotFoundError('Пользователь не найден');
     }
   } catch (err) {
-    if (err.name === 'CastError') {
-      next(new BadRequestError('Передан некорректный id'));
-    } else {
-      next(err);
-    }
+    next(err);
   }
 };
 
