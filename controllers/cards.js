@@ -20,7 +20,7 @@ const postCard = async (req, res, next) => {
     res.status(201).send(newCard);
   } catch (err) {
     if (err.name === 'ValidationError') {
-      next(new BadRequestError('Переданы некорректные данные карточки'));
+      next(new BadRequestError('Переданы некорректные данные карточки1'));
     } else {
       next(err);
     }
